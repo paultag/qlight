@@ -1,6 +1,14 @@
 #!/bin/bash
 # OK. We care about a few things.
 
+echo "  ===== build status ====="
+echo ""
+for x in `ls $OUTPUT/sbo-run-*`; do
+    echo -n "`basename $x .log`  "
+    cat $x| grep "^Status: " | sed 's/Status: //g'
+done
+echo ""
+
 echo "  ===== global status ====="
 echo ""
 cat $OUTPUT/build 2>/dev/null

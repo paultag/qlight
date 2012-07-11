@@ -5,6 +5,7 @@ export BUILDROOT=/tmp/qlight/$$.workdir
 export PLAYPEN=$BUILDROOT/workdir
 export OUTPUT=$BUILDROOT/output
 export PATH="$PATH:$ROOTDIR/bin"
+export LOGDIR="$ROOTDIR/logs/$$.qlight"
 
 export SERVER_ADMIN="paultag@ubuntu.com"
 
@@ -76,6 +77,15 @@ mv $OUTPUT/* .
 rm -rf $BUILDROOT
 
 rm -fv $ROOTDIR/queue/$x
-rm -fv $ROOTDIR/pool/$FILES
 
-qlite-email "$PACKAGE/$VERSION (id: $$.qlight)" $FAILURE
+cd $ROOTDIR/pool
+rm -fv $FILES
+cd -
+
+if [ "x$DONT_MAIL_ME" == "x" ]; then
+    qlite-email "$PACKAGE/$VERSION (id: $$.qlight)" $FAILURE
+fi
+
+# And, publish logs.
+mkdir -p $LOGDIR
+mv * $LOGDIR

@@ -1,0 +1,10 @@
+#!/bin/bash
+
+cd */debian/../
+export BUILDPATH="./"
+
+echo "checking fdupes:"
+fdupes -q -r $BUILDPATH/
+
+echo "Checking for file similarity:"
+find $BUILDPATH -type f | sim_text -ipTt 75 | tac | column -t

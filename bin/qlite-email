@@ -10,7 +10,6 @@ for x in `ls *log`; do
     ATTACHMENTS="$ATTACHMENTS -a $x"
 done
 
-
 if [ -e bigissues.log ]; then
     cp bigissues.log spool
 else

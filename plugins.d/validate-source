@@ -77,7 +77,8 @@ echo "lacheck:"
 find $BUILDPATH/ -iname *.tex -print0 | xargs --no-run-if-empty --null lacheck
 
 echo "jslint:"
-find $BUILDPATH/ -iname *.js -print0 | xargs --no-run-if-empty --null jslint
+find $BUILDPATH/ -iname *.js -print0 | xargs --no-run-if-empty --null \
+    /usr/local/bin/jslint
 
 echo "check for environ calls to home:"
 find $BUILDPATH -iname *.py -print0 | xargs --no-run-if-empty --null \
@@ -89,8 +90,4 @@ grep -r '/tmp/' $BUILDPATH
 echo "check for use of system():"
 grep -r 'system *(' $BUILDPATH
 
-echo "checking fdupes:"
-fdupes -r $BUILDPATH/
-
-echo "Checking for file similarity:"
-find $BUILDPATH -type f | sim_text -ipTt 75 | tac | column -t
+exit 0
