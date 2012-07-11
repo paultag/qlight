@@ -1,0 +1,8 @@
+extract
+watch
+licensecheck
+validate-source
+build
+descr
+lintian
+bigissues

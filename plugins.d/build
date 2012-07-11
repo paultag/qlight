@@ -1,0 +1,28 @@
+#!/bin/bash
+
+cd */debian/../
+RET=0
+export SB_SBUILD_OPTS="--purge-deps=always"  # Override nopurge.
+export SB_BREAK_WAIT="true" # Don't hang.
+export SBUILD_DSC=$1  # Don't rebuild
+
+for ty in clang gcc; do
+    echo "Building with $ty"
+    sudo sb-clean $ty
+    sudo sbo $ty > $OUTPUT/sbo-run-$ty.log
+    # cp ../*build $OUTPUT/sbo-sbuild-run-$ty.log
+    RET=$?  # We just want the last build's exit status.
+#    cd /var/sbuild/sid.overlay.d/sid-$ty/
+#    find . -type f > $OUTPUT/sbo-taint-$ty.log 2>/dev/null
+#    for x in `find usr etc lib -type f | sort -u 2>/dev/null`; do
+#        if [ -e /var/sbuild/sid.d/sid-$ty/$x ]; then
+#            if [ "x`file $x | grep -i text`" != "x" ]; then
+#                diff -Nuarp $x /var/sbuild/sid.d/sid-$ty/$x; >> \
+#                    $OUTPUT/sbo-taint-diff-$ty.log 2>/dev/null
+#            fi;
+#        fi;
+#    done
+#    cd -
+done
+
+exit $RET

@@ -1,0 +1,26 @@
+#!/bin/bash
+
+export SERVER_ADMIN="paultag@ubuntu.com"
+
+cd ~/runpool
+# OK. Time for mad clown-love.
+
+ATTACHMENTS=""
+for x in `ls *log`; do
+    ATTACHMENTS="$ATTACHMENTS -a $x"
+done
+
+
+if [ -e bigissues.log ]; then
+    cp bigissues.log spool
+else
+    cp build spool
+fi
+
+FAIL="Success"
+if [ "x$2" != "xno" ]; then
+    FAIL="Failure"
+fi
+
+mailx -s "qlightd - build finished with $FAIL ($1)" \
+    $ATTACHMENTS $SERVER_ADMIN < spool

@@ -1,0 +1,81 @@
+#!/bin/bash
+
+export ROOTDIR="$HOME/qlight"
+export BUILDROOT=/tmp/qlight/$$.workdir
+export PLAYPEN=$BUILDROOT/workdir
+export OUTPUT=$BUILDROOT/output
+export PATH="$PATH:$ROOTDIR/bin"
+
+export SERVER_ADMIN="paultag@ubuntu.com"
+
+cd ~/runpool
+rm -rf *
+
+POPDIR=`pwd`
+
+mkdir -p $PLAYPEN $OUTPUT
+
+cd $ROOTDIR/queue
+# OK, let's pick the next one.
+
+x=`ls | head -n1`
+
+if [ "x$x" == "x" ]; then
+    echo "Nothing to do."
+    exit 1
+fi
+
+FILES=`parse-changelog $x | changes-files`
+
+for file in $FILES; do
+    cp $ROOTDIR/pool/$file $PLAYPEN
+done
+
+VERSION=`cat $x | grep ^Version | sed 's/Version: //g'`
+PACKAGE=`cat $x | grep ^Source | sed 's/Source: //g'`
+
+cd $PLAYPEN
+DSC=`ls *dsc`
+
+FAILURE="no"
+echo ""
+echo "Order:"
+PLUGINS=$(cat $ROOTDIR/plugins)
+echo $PLUGINS
+echo ""
+
+if [ "x$DONT_MAIL_ME" == "x" ]; then
+mailx -s "qlightd - ACCEPTED $PACKAGE/$VERSION - now building." \
+    $SERVER_ADMIN <<EOF
+Hi there,
+
+I've accepted this package. It's now building.
+
+Thanks!
+ - Your Server
+EOF
+fi
+
+for foo in $PLUGINS; do
+    echo "Processing $foo."
+    if [ "x$FAILURE" == "xno" ]; then
+        echo "Working on $foo"
+        $ROOTDIR/plugins.d/$foo $DSC > $OUTPUT/$foo.log 2>&1
+        retcode=$?
+        echo "Ran plugin $foo, exit code $retcode" >> $OUTPUT/build
+        if [ $retcode -ne 0 ]; then
+            FAILURE=1
+            echo "Since there was a nonzero return, stopping here."
+        fi
+        echo "Finished $foo"
+    fi
+done < $ROOTDIR/plugins
+
+cd $POPDIR
+mv $OUTPUT/* .
+rm -rf $BUILDROOT
+
+rm -fv $ROOTDIR/queue/$x
+rm -fv $ROOTDIR/pool/$FILES
+
+qlite-email "$PACKAGE/$VERSION (id: $$.qlight)" $FAILURE

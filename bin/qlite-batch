@@ -1,0 +1,23 @@
+#!/bin/bash
+set -e
+
+ROOTDIR="$HOME/qlight"
+NUMREC=0
+
+cd $ROOTDIR/incoming
+
+for x in `ls *changes 2>/dev/null`; do
+    echo $x;
+    let NUMREC=$NUMREC+1
+    FILES=`$ROOTDIR/bin/parse-changelog $x | $ROOTDIR/bin/changes-files`
+    for file in $FILES; do
+        cp $file $ROOTDIR/pool -v
+        rm $file
+    done
+    mv $x $ROOTDIR/queue
+done
+
+echo "Finished processing."
+echo "  $NUMREC processed."
+echo ""
+echo "Hang tight, cron runs at every 5th minute - time now `date`"

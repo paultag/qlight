@@ -1,0 +1,96 @@
+#!/bin/bash
+
+cd */debian/../
+export BUILDPATH="./"
+
+echo "suspicious-source:"
+suspicious-source
+
+echo "bashisms:"
+find . -name "*.sh" -exec checkbashisms '{}' \;
+
+echo "pyflakes:"
+find . -name "*.py" -exec pyflakes '{}' \;
+
+echo "cppcheck:"
+cppcheck -j8 --quiet -f $BUILDPATH
+
+echo "phplint:"
+find $BUILDPATH -iname \*.php\* -print0 | xargs --no-run-if-empty --null -n1 \
+    php -l -f
+
+echo "desktop validate:"
+find $BUILDPATH/ -iname \*.desktop -print0 | xargs --no-run-if-empty --null \
+    -n1 desktop-file-validate
+
+echo "mp3check:"
+find $BUILDPATH/ -iname \*.mp3 -print0 | xargs --no-run-if-empty --null \
+    mp3check --error-check --anomaly-check
+
+echo "mp3val:"
+find $BUILDPATH/ -iname \*.mp3 -print0 | xargs --no-run-if-empty --null mp3val
+
+echo "fontlint:"
+find $BUILDPATH/ \( -iname \*.ttf -o -iname \*.otf -o -iname \*.sfd -o -iname \
+    \*.pfa -o -iname \*.pfb -o -iname \*.bdf -o -iname \*.pk -o -iname \*.ttc \
+    -o -iname \*.pcf \) -print0 | xargs --null --no-run-if-empty --max-args=1 \
+    fontlint
+
+echo "ftvalid:"
+find $BUILDPATH/ \( -iname \*.ttf -o -iname \*.otf \) -print0 | xargs \
+    --no-run-if-empty --null -n1 ftvalid
+
+echo "msgfmt:"
+find $BUILDPATH/ \( -name \*.po -o -name \*.pot \) -print0 | xargs \
+    --max-args=1 --no-run-if-empty --null msgfmt --check --check-compatibility \
+    --check-accelerators
+
+echo "POFileChecker:"
+find $BUILDPATH/ \( -name \*.po -o -name \*.pot \) -print0 | xargs \
+    --no-run-if-empty --null POFileChecker
+
+echo "POFileSpell:"
+find $BUILDPATH/ \( -name \*.po -o -name \*.pot \) -print0 | xargs \
+    --no-run-if-empty --null POFileSpell
+
+echo "pngcheck:"
+find $BUILDPATH/ -iname *.png -print0 | xargs --no-run-if-empty --null \
+    pngcheck -q
+
+echo "jpeginfo:"
+find $BUILDPATH/ \( -iname \*.jpg -o -iname \*.jpeg \) -print0 | xargs \
+    --no-run-if-empty --null jpeginfo --check --quiet | fgrep -v "[OK]"
+
+echo "ogginfo:"
+find $BUILDPATH/ \( -iname \*.ogg -o -iname \*.oga -o -iname \*.ogv \) -print0 \
+    | xargs --no-run-if-empty --null ogginfo -q
+
+echo "oggz-validate:"
+find $BUILDPATH/ \( -iname \*.ogg -o -iname \*.oga -o -iname \*.ogv \) -print0 \
+    | xargs --no-run-if-empty --null oggz-validate
+
+echo "xmllint:"
+find $BUILDPATH/ -iname \*.xml -print0 | xargs --no-run-if-empty --null \
+    xmllint --noout
+
+echo "lacheck:"
+find $BUILDPATH/ -iname *.tex -print0 | xargs --no-run-if-empty --null lacheck
+
+echo "jslint:"
+find $BUILDPATH/ -iname *.js -print0 | xargs --no-run-if-empty --null jslint
+
+echo "check for environ calls to home:"
+find $BUILDPATH -iname *.py -print0 | xargs --no-run-if-empty --null \
+    grep 'environ *\[.HOME.\]'
+
+echo "check for use of /tmp:"
+grep -r '/tmp/' $BUILDPATH
+
+echo "check for use of system():"
+grep -r 'system *(' $BUILDPATH
+
+echo "checking fdupes:"
+fdupes -r $BUILDPATH/
+
+echo "Checking for file similarity:"
+find $BUILDPATH -type f | sim_text -ipTt 75 | tac | column -t

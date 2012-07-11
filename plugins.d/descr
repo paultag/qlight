@@ -1,0 +1,6 @@
+#!/bin/bash
+
+for x in `ls *deb`; do
+    change=$(dpkg-deb -I $x control | parse-changelog)
+    echo "$change" | check-description
+done

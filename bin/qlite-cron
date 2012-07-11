@@ -1,0 +1,25 @@
+#!/bin/bash
+
+PID=/tmp/qlite.pid
+
+if [ -e /tmp/qlite.pid ]; then
+    ps --no-header `cat $PID` > /dev/null
+    RET=$?
+    if [ $RET -eq 0 ]; then
+        echo "E: Someone else is waiting. Bombing out."
+        exit 1
+    else
+        echo "I: Somone else was waiting, but their PID is gone."
+        echo "I: I'm taking runtime. Suck it."
+    fi
+fi
+
+echo $$ > $PID
+RET=0
+
+while [ $RET -eq 0 ]; do
+    /home/tag/qlight/bin/qlited
+    RET=$?
+done
+
+rm $PID

@@ -1,0 +1,9 @@
+#!/bin/bash
+
+CHANGES=$(ls ./*$(dpkg-architecture | grep DEB_BUILD_ARCH= \
+    | awk -F "=" '{print $2}')*changes)
+
+FLAGS="-iIE --pedantic"
+
+lintian $CHANGES $FLAGS
+lintian4py $CHANGES $FLAGS

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+cd */debian/../
+uscan --verbose
+
+exit 0

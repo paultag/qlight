@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cd */debian/../
+licensecheck . --recursive

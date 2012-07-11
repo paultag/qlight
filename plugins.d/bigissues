@@ -1,0 +1,50 @@
+#!/bin/bash
+# OK. We care about a few things.
+
+echo "  ===== global status ====="
+echo ""
+cat $OUTPUT/build 2>/dev/null
+echo ""
+
+echo "  ===== descr ====="
+echo ""
+cat $OUTPUT/descr.log 2>/dev/null
+echo ""
+
+echo "  ===== piuparts ====="
+echo ""
+echo "   [last 20 lines]"
+cat $OUTPUT/piuparts.log 2>/dev/null | tail -n 20
+echo ""
+
+echo "  ===== licenses ====="
+echo ""
+cat $OUTPUT/licensecheck.log 2>/dev/null | sed 's/.*: //g' | sort -u
+echo ""
+
+echo "  ===== lintian ====="
+echo ""
+cat $OUTPUT/lintian.log 2>/dev/null
+echo ""
+
+echo "  ===== watch ====="
+echo ""
+cat $OUTPUT/watch.log 2>/dev/null
+echo ""
+
+echo "  ===== source issues ====="
+echo ""
+cat $OUTPUT/validate-source.log 2>/dev/null
+echo ""
+
+
+# Warnings in build logs
+for x in `ls $OUTPUT/sbo-run*log 2>/dev/null`; do
+    WARNINGS=$(grep -i warn $x)
+    if [ "x$WARNINGS" != "x" ]; then
+        echo "  ===== `basename $x` warnings ====="
+        echo ""
+        echo "$WARNINGS"
+        echo ""
+    fi
+done
